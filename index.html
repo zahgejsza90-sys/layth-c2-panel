@@ -5,152 +5,423 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Layth C2 Server</title>
     <style>
-        /* إعدادات الخلفية والصورة من وحي الصورة المرسلة */
         body {
             margin: 0;
             padding: 0;
-            background: #050505 url('https://unsplash.com') no-repeat center center fixed;
-            background-size: cover;
+            background: #000000 url('image_d2KgnX.png') no-repeat center center fixed;
+            background-size: contain;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            color: #ffffff;
         }
 
-        /* طبقة حماية داكنة فوق الصورة لإبراز مربعات الإدخال */
         .overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1;
         }
 
-        /* حاوية بوابة الدخول المركزية */
         .login-container {
             position: relative;
             z-index: 2;
-            background: rgba(15, 15, 15, 0.9);
-            border: 2px solid #ff1e1e;
-            box-shadow: 0 0 25px rgba(255, 30, 30, 0.4);
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            width: 360px;
-            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 25vh; 
+            padding: 10px;
+            box-sizing: border-box;
         }
 
-        /* زر التحويل السريع بين اللغتين عربي/إنجليزي */
         .lang-switcher {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #1a1a1a;
+            top: -20vh;
+            right: 10px;
+            background: rgba(15, 15, 15, 0.9);
             color: #ff1e1e;
             border: 1px solid #ff1e1e;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
+            box-shadow: 0 0 10px rgba(255, 30, 30, 0.3);
+            z-index: 10;
         }
 
-        /* ترويسة الترحيب (خادم ليث) */
-        h2 {
-            color: #ffffff;
-            margin-bottom: 30px;
-            font-size: 22px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-            letter-spacing: 1px;
-        }
-
-        /* حاوية المربعات الصغيرة الخمسة للرمز السري */
         .pin-wrapper {
             display: flex;
             justify-content: space-between;
+            width: 100%;
             margin-bottom: 25px;
-            direction: ltr; /* للحفاظ على ترتيب المربعات من اليسار لليمين دائمًا */
+            direction: ltr;
         }
 
-        /* تصميم المربعات الصغيرة */
         .pin-box {
-            width: 50px;
-            height: 50px;
-            background: #0a0a0a;
-            border: 2px solid #555555;
-            border-radius: 8px;
+            width: 48px;
+            height: 48px;
+            background: rgba(5, 5, 5, 0.9);
+            border: 2px solid #333333;
+            border-radius: 6px;
             color: #ff1e1e;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
             text-align: center;
             outline: none;
             transition: all 0.2s ease;
         }
 
-        /* تأثير إضاءة المربع عند الكتابة أو الوقوف عليه */
         .pin-box:focus {
             border-color: #ff1e1e;
-            box-shadow: 0 0 15px rgba(255, 30, 30, 0.6);
-            background: #111111;
+            box-shadow: 0 0 12px rgba(255, 30, 30, 0.6);
+            background: #000000;
         }
 
-        /* رسائل الأخطاء أو النجاح */
+        h2 {
+            color: #ffffff;
+            margin: 5px 0 15px 0;
+            font-size: 19px;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            text-align: center;
+            order: 2;
+        }
+
         .status-msg {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             height: 20px;
-            margin-top: 10px;
+            text-align: center;
+            order: 3;
         }
-        .error { color: #ff1e1e; text-shadow: 0 0 5px rgba(255,30,30,0.3); }
-        .success { color: #00ff66; text-shadow: 0 0 5px rgba(0,255,102,0.3); }
+        .error { color: #ff1e1e; text-shadow: 0 0 8px rgba(255,30,30,0.6); }
+        .success { color: #00ff66; text-shadow: 0 0 8px rgba(0,255,102,0.6); }
+                .main-panel {
+            display: none;
+            position: relative;
+            z-index: 5;
+            width: 95%;
+            max-width: 800px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid #ff1e1e;
+            box-shadow: 0 0 30px rgba(255, 30, 30, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            box-sizing: border-box;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            color: #ff1e1e;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 30, 30, 0.4);
+        }
+
+        .panel-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 600px) {
+            .panel-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .control-box {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #333333;
+            border-radius: 6px;
+            padding: 15px;
+        }
+
+        .control-box h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #ffffff;
+            border-bottom: 1px solid #222222;
+            padding-bottom: 8px;
+        }
+
+        .network-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .net-btn {
+            flex: 1;
+            background: #111111;
+            border: 1px solid #444444;
+            color: #888888;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .net-btn.active {
+            background: #ff1e1e;
+            color: #ffffff;
+            border-color: #ff1e1e;
+            box-shadow: 0 0 10px rgba(255, 30, 30, 0.4);
+        }
+
+        .input-field {
+            width: 100%;
+            background: #000000;
+            border: 1px solid #444444;
+            color: #00ff66;
+            padding: 10px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+            font-family: monospace;
+        }
+
+        .input-field:focus { border-color: #ff1e1e; }
+
+        .action-btn {
+            width: 100%;
+            background: #111111;
+            border: 1px solid #ff1e1e;
+            color: #ff1e1e;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #ff1e1e;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 30, 30, 0.5);
+        }
+
+        .device-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .device-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+            border: 1px solid #222222;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border 0.2s;
+        }
+
+        .device-item:hover { border-color: #ff1e1e; }
+
+        .device-info { display: flex; align-items: center; gap: 10px; }
+
+        .device-id {
+            background: #222222;
+            color: #ff1e1e;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .online-dot { background: #00ff66; box-shadow: 0 0 8px #00ff66; }
+        .offline-dot { background: #ff1e1e; box-shadow: 0 0 8px #ff1e1e; }
+
+        .file-viewer {
+            margin-top: 20px;
+            background: #050505;
+            border: 1px solid #222222;
+            border-radius: 6px;
+            padding: 15px;
+            display: none;
+        }
+
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .file-card {
+            background: #111111;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .file-card:hover { border-color: #00ff66; }
+
+        .file-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #ff1e1e;
+        }
+
+        .download-all-btn {
+            background: #00ff66;
+            color: #000000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
 
     <div class="overlay"></div>
 
-    <div class="login-container">
-        <!-- زر التبديل الفوري بين العربي والإنجليزي -->
-        <button class="lang-switcher" id="langBtn" onclick="toggleLanguage()">العربية</button>
-        
-        <!-- نص الترحيب التفاعلي بخادم ليث -->
+    <div class="login-container" id="loginStage">
         <h2 id="welcomeTxt">Welcome to Layth C2 Server</h2>
-        
-        <!-- المربعات الصغيرة الـ 5 لإدخال الرمز -->
         <div class="pin-wrapper">
-            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 1)" onkeydown="moveBack(this, 1)">
-            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 2)" onkeydown="moveBack(this, 2)">
-            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 3)" onkeydown="moveBack(this, 3)">
-            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 4)" onkeydown="moveBack(this, 4)">
-            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 5)" onkeydown="moveBack(this, 5)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 1)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 2)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 3)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 4)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 5)">
         </div>
-
-        <!-- مكان ظهور رسالة التحقق للرمز -->
         <div class="status-msg" id="statusMsg"></div>
     </div>
 
+    <div class="main-panel" id="panelStage">
+        <div class="panel-header">
+            <div class="panel-title" id="panelTitle">LAYTH C2 CONTROL PANEL</div>
+            <div class="status-dot online-dot"></div>
+        </div>
+
+        <div class="panel-grid">
+            <div class="control-box">
+                <h3 id="box1Title">Execute File Retrieval</h3>
+                <div class="network-toggle">
+                    <button class="net-btn active" id="localBtn" onclick="setNetwork('local')">Local LAN</button>
+                    <button class="net-btn" id="remoteBtn" onclick="setNetwork('remote')">Remote WAN</button>
+                </div>
+                <label style="font-size: 12px; color: #888;" id="targetLabel">Enter Target Device Number:</label>
+                <input type="number" class="input-field" id="targetIdInput" value="1">
+                <button class="action-btn" id="pullBtn" onclick="triggerPullCommand()">PULL MEDIA & FILES</button>
+            </div>
+
+            <div class="control-box">
+                <h3 id="box2Title">Connected Active Targets</h3>
+                <ul class="device-list">
+                    <li class="device-item" onclick="viewDeviceFiles(1, 'Samsung Galaxy S24')">
+                        <div class="device-info"><span class="device-id">#1</span><span>Samsung Galaxy S24</span></div>
+                        <div class="status-dot online-dot"></div>
+                    </li>
+                    <li class="device-item" onclick="viewDeviceFiles(2, 'Google Pixel 9')">
+                        <div class="device-info"><span class="device-id">#2</span><span>Google Pixel 9</span></div>
+                        <div class="status-dot online-dot"></div>
+                    </li>
+                    <li class="device-item" onclick="viewDeviceFiles(3, 'iPhone 15 Pro')">
+                        <div class="device-info"><span class="device-id">#3</span><span style="color:#666;">iPhone 15 Pro</span></div>
+                        <div class="status-dot offline-dot"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="file-viewer" id="fileViewerSection">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: bold; color: #00ff66;" id="viewerHeader">Retrieved Files</span>
+                <button class="download-all-btn" id="saveBtn" onclick="downloadAllSimulated()">SAVE TO INFINIX FOLDER</button>
+            </div>
+            <div class="file-grid">
+                <div class="file-card"><div class="file-icon">🖼️</div>DCIM_01.jpg</div>
+                <div class="file-card"><div class="file-icon">🖼️</div>DCIM_02.png</div>
+                <div class="file-card"><div class="file-icon">🎵</div>VOICE_REC.mp3</div>
+                <div class="file-card"><div class="file-icon">🎬</div>VIDEO_01.mp4</div>
+            </div>
+        </div>
+    </div>
     <script>
-        // الرمز السري المطلوب للفتح
         const CORRECT_PIN = "00100";
         let currentLang = "en";
+        let selectedNetwork = "local";
 
-        // نصوص الواجهة المترجمة تلقائيًا
         const translations = {
-            en: { welcome: "Welcome to Layth C2 Server", btn: "العربية", err: "ACCESS DENIED - INVALID PIN", success: "ACCESS GRANTED. CONNECTING..." },
-            ar: { welcome: "أهلاً وسهلاً بك في خادم ليث", btn: "English", err: "تم رفض الدخول - الرمز خاطئ", success: "تم قبول الدخول. جاري الاتصال..." }
+            en: {
+                welcome: "Welcome to Layth C2 Server",
+                btn: "العربية",
+                err: "ACCESS DENIED - INVALID PIN",
+                success: "ACCESS GRANTED. CONNECTING...",
+                panelTitle: "LAYTH C2 CONTROL PANEL",
+                box1Title: "Execute File Retrieval",
+                box2Title: "Connected Active Targets",
+                localNet: "Local LAN",
+                remoteNet: "Remote WAN",
+                targetLabel: "Enter Target Device Number:",
+                pullBtn: "PULL MEDIA & FILES",
+                saveBtn: "SAVE TO INFINIX FOLDER"
+            },
+            ar: {
+                welcome: "أهلاً وسهلاً بك في خادم ليث",
+                btn: "English",
+                err: "تم رفض الدخول - الرمز خاطئ",
+                success: "تم قبول الدخول. جاري الاتصال...",
+                panelTitle: "لوحة تحكم خادم ليث المركزي C2",
+                box1Title: "تنفيذ أمر سحب وتصفح الملفات",
+                box2Title: "الأجهزة النشطة المتصلة حالياً",
+                localNet: "شبكة محلية LAN",
+                remoteNet: "اتصال عن بُعد WAN",
+                targetLabel: "أدخل رقم الجهاز المستهدف للعملية:",
+                pullBtn: "ابدأ سحب الملفات والوسائط الآن",
+                saveBtn: "حفظ وتحميل الملفات في مجلد الجهاز"
+            }
         };
 
-        // دالة التبديل بين اللغتين
         function toggleLanguage() {
             currentLang = currentLang === "en" ? "ar" : "en";
-            document.getElementById("welcomeTxt").innerText = translations[currentLang].welcome;
             document.getElementById("langBtn").innerText = translations[currentLang].btn;
+            document.getElementById("welcomeTxt").innerText = translations[currentLang].welcome;
+            document.getElementById("panelTitle").innerText = translations[currentLang].panelTitle;
+            document.getElementById("box1Title").innerText = translations[currentLang].box1Title;
+            document.getElementById("box2Title").innerText = translations[currentLang].box2Title;
+            document.getElementById("localBtn").innerText = translations[currentLang].localNet;
+            document.getElementById("remoteBtn").innerText = translations[currentLang].remoteNet;
+            document.getElementById("targetLabel").innerText = translations[currentLang].targetLabel;
+            document.getElementById("pullBtn").innerText = translations[currentLang].pullBtn;
+            document.getElementById("saveBtn").innerText = translations[currentLang].saveBtn;
             document.getElementById("statusMsg").innerText = "";
             clearFields();
         }
 
-        // الانتقال التلقائي للمربع التالي عند الكتابة
         function moveNext(current, index) {
             if (current.value.length === 1 && index < 5) {
                 document.querySelectorAll('.pin-box')[index].focus();
@@ -158,41 +429,57 @@
             checkFullPin();
         }
 
-        // الرجوع التلقائي للمربع السابق عند ضغط زر الحذف (Backspace)
-        function moveBack(current, index) {
-            if (event.key === "Backspace" && current.value.length === 0 && index > 1) {
-                document.querySelectorAll('.pin-box')[index - 2].focus();
-            }
-        }
-
-        // مسح محتوى المربعات
         function clearFields() {
             document.querySelectorAll('.pin-box').forEach(box => box.value = "");
             document.querySelectorAll('.pin-box')[0].focus();
         }
 
-        // التحقق التلقائي والفوري من الرمز بمجرد اكتمال المربعات الخمسة
         function checkFullPin() {
             let inputs = document.querySelectorAll('.pin-box');
             let enteredPin = "";
             inputs.forEach(box => enteredPin += box.value);
-
             let statusEl = document.getElementById("statusMsg");
 
             if (enteredPin.length === 5) {
                 if (enteredPin === CORRECT_PIN) {
                     statusEl.className = "status-msg success";
                     statusEl.innerText = translations[currentLang].success;
-                    // هنا نضع التوجيه المستقبلي للوحة التحكم بعد النجاح أمام الدكتور
-                    setTimeout(() => { 
-                        alert("تم تجاوز البوابة بنجاح! هنا ستفتح لوحة تحكم الـ RAT لإدارة الأجهزة."); 
+                    setTimeout(() => {
+                        document.getElementById("loginStage").style.display = "none";
+                        document.getElementById("panelStage").style.display = "block";
                     }, 1000);
                 } else {
                     statusEl.className = "status-msg error";
                     statusEl.innerText = translations[currentLang].err;
-                    setTimeout(clearFields, 1200); // مسح تلقائي عند الخطأ لإعادة المحاولة سريعًا
+                    setTimeout(clearFields, 1200);
                 }
             }
+        }
+
+        function setNetwork(type) {
+            selectedNetwork = type;
+            document.getElementById("localBtn").className = type === 'local' ? "net-btn active" : "net-btn";
+            document.getElementById("remoteBtn").className = type === 'remote' ? "net-btn active" : "net-btn";
+        }
+
+        function triggerPullCommand() {
+            let id = document.getElementById("targetIdInput").value;
+            if(!id) return;
+            let alertMsg = currentLang === 'en' ? `Sending instant PULL command to target #${id}...` : `جاري إرسال أمر السحب الفوري للجهاز رقم #${id}...`;
+            alert(alertMsg);
+            document.getElementById("viewerHeader").innerText = currentLang === 'en' ? `Retrieved Files from Device #${id}` : `الملفات التي تم سحبها من الجهاز رقم #${id}`;
+            document.getElementById("fileViewerSection").style.display = "block";
+        }
+
+        function viewDeviceFiles(id, name) {
+            document.getElementById("targetIdInput").value = id;
+            document.getElementById("viewerHeader").innerText = currentLang === 'en' ? `Retrieved Files from Device #${id} (${name})` : `الملفات التي تم سحبها من الجهاز رقم #${id} (${name})`;
+            document.getElementById("fileViewerSection").style.display = "block";
+        }
+
+        function downloadAllSimulated() {
+            let msg = currentLang === 'en' ? "Downloading media files directly to your Infinix download folder..." : "جاري تحميل وحفظ ملفات الوسائط المحددة داخل مجلد التحميلات بجهازك Infinix...";
+            alert(msg);
         }
     </script>
 </body>
