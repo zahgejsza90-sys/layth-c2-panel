@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layth C2 Server</title>
+    <style>
+        /* إعدادات الخلفية والصورة من وحي الصورة المرسلة */
+        body {
+            margin: 0;
+            padding: 0;
+            background: #050505 url('https://unsplash.com') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* طبقة حماية داكنة فوق الصورة لإبراز مربعات الإدخال */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1;
+        }
+
+        /* حاوية بوابة الدخول المركزية */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            background: rgba(15, 15, 15, 0.9);
+            border: 2px solid #ff1e1e;
+            box-shadow: 0 0 25px rgba(255, 30, 30, 0.4);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            width: 360px;
+            transition: all 0.3s ease;
+        }
+
+        /* زر التحويل السريع بين اللغتين عربي/إنجليزي */
+        .lang-switcher {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #1a1a1a;
+            color: #ff1e1e;
+            border: 1px solid #ff1e1e;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* ترويسة الترحيب (خادم ليث) */
+        h2 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 22px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+        }
+
+        /* حاوية المربعات الصغيرة الخمسة للرمز السري */
+        .pin-wrapper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            direction: ltr; /* للحفاظ على ترتيب المربعات من اليسار لليمين دائمًا */
+        }
+
+        /* تصميم المربعات الصغيرة */
+        .pin-box {
+            width: 50px;
+            height: 50px;
+            background: #0a0a0a;
+            border: 2px solid #555555;
+            border-radius: 8px;
+            color: #ff1e1e;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        /* تأثير إضاءة المربع عند الكتابة أو الوقوف عليه */
+        .pin-box:focus {
+            border-color: #ff1e1e;
+            box-shadow: 0 0 15px rgba(255, 30, 30, 0.6);
+            background: #111111;
+        }
+
+        /* رسائل الأخطاء أو النجاح */
+        .status-msg {
+            font-size: 14px;
+            font-weight: bold;
+            height: 20px;
+            margin-top: 10px;
+        }
+        .error { color: #ff1e1e; text-shadow: 0 0 5px rgba(255,30,30,0.3); }
+        .success { color: #00ff66; text-shadow: 0 0 5px rgba(0,255,102,0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+
+    <div class="login-container">
+        <!-- زر التبديل الفوري بين العربي والإنجليزي -->
+        <button class="lang-switcher" id="langBtn" onclick="toggleLanguage()">العربية</button>
+        
+        <!-- نص الترحيب التفاعلي بخادم ليث -->
+        <h2 id="welcomeTxt">Welcome to Layth C2 Server</h2>
+        
+        <!-- المربعات الصغيرة الـ 5 لإدخال الرمز -->
+        <div class="pin-wrapper">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 1)" onkeydown="moveBack(this, 1)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 2)" onkeydown="moveBack(this, 2)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 3)" onkeydown="moveBack(this, 3)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 4)" onkeydown="moveBack(this, 4)">
+            <input type="password" class="pin-box" maxlength="1" oninput="moveNext(this, 5)" onkeydown="moveBack(this, 5)">
+        </div>
+
+        <!-- مكان ظهور رسالة التحقق للرمز -->
+        <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <script>
+        // الرمز السري المطلوب للفتح
+        const CORRECT_PIN = "00100";
+        let currentLang = "en";
+
+        // نصوص الواجهة المترجمة تلقائيًا
+        const translations = {
+            en: { welcome: "Welcome to Layth C2 Server", btn: "العربية", err: "ACCESS DENIED - INVALID PIN", success: "ACCESS GRANTED. CONNECTING..." },
+            ar: { welcome: "أهلاً وسهلاً بك في خادم ليث", btn: "English", err: "تم رفض الدخول - الرمز خاطئ", success: "تم قبول الدخول. جاري الاتصال..." }
+        };
+
+        // دالة التبديل بين اللغتين
+        function toggleLanguage() {
+            currentLang = currentLang === "en" ? "ar" : "en";
+            document.getElementById("welcomeTxt").innerText = translations[currentLang].welcome;
+            document.getElementById("langBtn").innerText = translations[currentLang].btn;
+            document.getElementById("statusMsg").innerText = "";
+            clearFields();
+        }
+
+        // الانتقال التلقائي للمربع التالي عند الكتابة
+        function moveNext(current, index) {
+            if (current.value.length === 1 && index < 5) {
+                document.querySelectorAll('.pin-box')[index].focus();
+            }
+            checkFullPin();
+        }
+
+        // الرجوع التلقائي للمربع السابق عند ضغط زر الحذف (Backspace)
+        function moveBack(current, index) {
+            if (event.key === "Backspace" && current.value.length === 0 && index > 1) {
+                document.querySelectorAll('.pin-box')[index - 2].focus();
+            }
+        }
+
+        // مسح محتوى المربعات
+        function clearFields() {
+            document.querySelectorAll('.pin-box').forEach(box => box.value = "");
+            document.querySelectorAll('.pin-box')[0].focus();
+        }
+
+        // التحقق التلقائي والفوري من الرمز بمجرد اكتمال المربعات الخمسة
+        function checkFullPin() {
+            let inputs = document.querySelectorAll('.pin-box');
+            let enteredPin = "";
+            inputs.forEach(box => enteredPin += box.value);
+
+            let statusEl = document.getElementById("statusMsg");
+
+            if (enteredPin.length === 5) {
+                if (enteredPin === CORRECT_PIN) {
+                    statusEl.className = "status-msg success";
+                    statusEl.innerText = translations[currentLang].success;
+                    // هنا نضع التوجيه المستقبلي للوحة التحكم بعد النجاح أمام الدكتور
+                    setTimeout(() => { 
+                        alert("تم تجاوز البوابة بنجاح! هنا ستفتح لوحة تحكم الـ RAT لإدارة الأجهزة."); 
+                    }, 1000);
+                } else {
+                    statusEl.className = "status-msg error";
+                    statusEl.innerText = translations[currentLang].err;
+                    setTimeout(clearFields, 1200); // مسح تلقائي عند الخطأ لإعادة المحاولة سريعًا
+                }
+            }
+        }
+    </script>
+</body>
+</html>
